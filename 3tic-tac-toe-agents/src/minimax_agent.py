@@ -1,5 +1,4 @@
-# src/minimax_agent.py
-from game import Game, PLAYER_X, PLAYER_O, EMPTY
+from game import Game, PLAYER_X, PLAYER_O
 import math
 
 class MinimaxAgent:
@@ -8,7 +7,7 @@ class MinimaxAgent:
         self.opp = PLAYER_O if player==PLAYER_X else PLAYER_X
         self.max_depth = max_depth
 
-    def evaluate(self, game: Game):
+    def evaluate(self, game):
         win = game.winner()
         if win == self.player:
             return 1
@@ -16,9 +15,9 @@ class MinimaxAgent:
             return -1
         elif win == "DRAW":
             return 0
-        return None  # non-terminal
+        return None
 
-    def minimax(self, game: Game, depth, alpha, beta, maximizing):
+    def minimax(self, game, depth, alpha, beta, maximizing):
         eval_term = self.evaluate(game)
         if eval_term is not None or depth==0:
             return eval_term if eval_term is not None else 0
@@ -46,7 +45,7 @@ class MinimaxAgent:
                     break
             return min_eval
 
-    def select_move(self, game: Game):
+    def select_move(self, game):
         best_score = -math.inf
         best_move = None
         for m in game.available_moves():

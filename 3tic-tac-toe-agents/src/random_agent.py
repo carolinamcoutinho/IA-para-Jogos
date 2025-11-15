@@ -1,4 +1,3 @@
-# src/random_agent.py
 import random
 class RandomAgent:
     def __init__(self, player):

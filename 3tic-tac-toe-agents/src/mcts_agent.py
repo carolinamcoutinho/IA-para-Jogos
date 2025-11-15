@@ -1,12 +1,11 @@
-# src/mcts_agent.py
-from game import Game, PLAYER_X, PLAYER_O, EMPTY
-import random, math, time, copy
+from game import Game, PLAYER_X, PLAYER_O
+import random, math, time
 
 class MCTSNode:
     def __init__(self, game: Game, player_to_move, parent=None, move=None):
         self.game = game
         self.parent = parent
-        self.move = move  # move that led here
+        self.move = move
         self.player_to_move = player_to_move
         self.children = []
         self.visits = 0
@@ -16,9 +15,9 @@ class MCTSNode:
         return len(self.children) == len(self.game.available_moves())
 
     def expand(self):
-        tried_moves = {c.move for c in self.children}
+        tried = {c.move for c in self.children}
         for m in self.game.available_moves():
-            if m not in tried_moves:
+            if m not in tried:
                 g = self.game.copy()
                 g.make_move(m, self.player_to_move)
                 next_player = PLAYER_O if self.player_to_move==PLAYER_X else PLAYER_X
@@ -36,9 +35,6 @@ class MCTSNode:
             choices.append((uct, child))
         return max(choices, key=lambda x: x[0])[1]
 
-    def rollout_policy(self, game):
-        return random.choice(game.available_moves())
-
 def default_policy(game: Game, player_to_move):
     g = game.copy()
     current = player_to_move
@@ -49,7 +45,7 @@ def default_policy(game: Game, player_to_move):
     return g.winner()
 
 class MCTSAgent:
-    def __init__(self, player=PLAYER_O, time_limit=0.5):
+    def __init__(self, player=PLAYER_O, time_limit=0.2):
         self.player = player
         self.time_limit = time_limit
 
@@ -58,17 +54,16 @@ class MCTSAgent:
         end_time = time.time() + self.time_limit
         while time.time() < end_time:
             node = root
-            # Selection
+            # selection
             while node.children and node.is_fully_expanded():
                 node = node.best_child()
-            # Expansion
+            # expansion
             if not node.game.is_terminal():
                 node = node.expand() or node
-            # Simulation
+            # simulation
             winner = default_policy(node.game, node.player_to_move)
-            # Backpropagation
+            # backprop
             self.backpropagate(node, winner)
-        # choose child with most visits
         best = max(root.children, key=lambda c: c.visits) if root.children else None
         return best.move if best else random.choice(game.available_moves())
 
@@ -79,5 +74,4 @@ class MCTSAgent:
                 node.wins += 1
             elif winner == "DRAW":
                 node.wins += 0.5
-            # else winner is opponent -> 0
             node = node.parent
